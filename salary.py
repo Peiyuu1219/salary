@@ -47,9 +47,8 @@ def main():
 
     # Input fields for the features
     age = st.number_input('Age', min_value=18, max_value=100, value=30)
-    workclass = st.selectbox('Workclass', workclass_options)  # Include workclass input
+    workclass = st.selectbox('Workclass', workclass_options)
     education = st.selectbox('Education', education_options)
-    education_num = st.number_input('Education Number', min_value=1, max_value=16, value=10)
     marital_status = st.selectbox('Marital Status', marital_status_options)
     occupation = st.selectbox('Occupation', occupation_options)
     relationship = st.selectbox('Relationship', relationship_options)
@@ -65,9 +64,8 @@ def main():
             # Prepare the input data for prediction
             input_data = pd.DataFrame({
                 'age': [age],
-                'workclass': [workclass],  # Include workclass in the input data
+                'workclass': [workclass],
                 'education': [education],
-                'education-num': [education_num],
                 'marital-status': [marital_status],
                 'occupation': [occupation],
                 'relationship': [relationship],
