@@ -3,7 +3,7 @@ import pandas as pd
 from joblib import load
 
 # Load the trained model, encoder, and scaler
-model_file = 'RandomForest.joblib'
+model_file = 'NaiveBayes.joblib'
 encoder_file = 'OneHotEncoder.joblib'
 scaler_file = 'FeatureScaling.joblib'
 
