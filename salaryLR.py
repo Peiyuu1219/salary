@@ -100,4 +100,7 @@ def main():
             final_input_data = pd.concat([numeric_features.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
     
             # Align the input columns with the model’s training columns
-            expected_columns = model
+    
+expected_columns = model.feature_names_in_  # Ensure the model gets the correct columns
+final_input_data = final_input_data.reindex(columns=expected_columns, fill_value=0)  # Ensure all columns are present
+
