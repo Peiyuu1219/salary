@@ -1,8 +1,7 @@
 import pandas as pd
 import streamlit as st
 from joblib import load
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler  # Change Normalizer to StandardScaler
 
 # Load the trained model
 model_file = 'LogisticRegression.joblib'
@@ -10,7 +9,7 @@ model_file = 'LogisticRegression.joblib'
 try:
     model = load(model_file)
     encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-    scaler = Normalizer()
+    scaler = StandardScaler()  # Change Normalizer to StandardScaler
 except Exception as e:
     st.error(f'Error loading files: {e}')
     st.stop()  # Stop the script if there's an issue with loading files
@@ -105,14 +104,12 @@ def main():
             final_input_data = final_input_data.reindex(columns=expected_columns, fill_value=0)  # Ensure all columns are present
     
             # Scale the numeric features
-            final_input_data_scaled = pd.DataFrame(scaler.transform(final_input_data), columns=final_input_data.columns)
+            final_input_data_scaled = pd.DataFrame(scaler.fit_transform(final_input_data), columns=final_input_data.columns)
     
             # Predict using the trained model
             prediction = model.predict(final_input_data_scaled)
 
-            # Display the prediction as symbols
-            symbol = "> 50K" if prediction[0] else "< 50K"
-            st.success(f'The predicted salary category for the provided details is: {symbol}')
+            st.success(f'The predicted salary for the provided details is: {prediction[0]}')
         except Exception as e:
             st.error(f'An error occurred during prediction: {e}')
 
