@@ -88,7 +88,9 @@ def main():
             # Predict using the trained model
             prediction = model.predict(final_input_data_scaled)
 
-            st.success(f'The predicted salary for the provided details is: {prediction[0]}')
+            # Display the prediction result
+            salary_category = 'greater than $50K' if prediction[0] == 1 else 'less than or equal to $50K'
+            st.success(f'The predicted salary for the provided details is: {salary_category}')
         except Exception as e:
             st.error(f'An error occurred during prediction: {e}')
 
