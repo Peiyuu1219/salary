@@ -1,15 +1,18 @@
 import pandas as pd
 import streamlit as st
 from joblib import load
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import Normalizer
 
-# Load the trained model and preprocessing tools
+# Load the trained model, encoder, and scaler
 model_file = 'LogisticRegression.joblib'
+encoder_file = 'OneHotEncoder.joblib'
+scaler_file = 'Normalizer.joblib'
 
 try:
     model = load(model_file)
-    encoder = load('OneHotEncoder.joblib')  # Load the pre-fitted encoder
-    scaler = load('StandardScaler.joblib')  # Load the pre-fitted scaler
+    encoder = load(encoder_file)
+    scaler = load(scaler_file)
 except Exception as e:
     st.error(f'Error loading files: {e}')
     st.stop()  # Stop the script if there's an issue with loading files
@@ -82,7 +85,7 @@ def main():
             final_input_data = final_input_data.reindex(columns=expected_columns, fill_value=0)  # Ensure all columns are present
     
             # Scale the numeric features
-            final_input_data_scaled = pd.DataFrame(scaler.transform(final_input_data), columns=final_input_data.columns)
+            final_input_data_scaled = scaler.transform(final_input_data)  # Use scaler directly as it was fitted on training data
     
             # Predict using the trained model
             prediction = model.predict(final_input_data_scaled)
