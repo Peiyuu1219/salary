@@ -1,15 +1,15 @@
 import pandas as pd
 import streamlit as st
 from joblib import load
-from sklearn.preprocessing import OneHotEncoder, StandardScaler  # Change Normalizer to StandardScaler
+from sklearn.preprocessing import StandardScaler
 
-# Load the trained model
+# Load the trained model and preprocessing tools
 model_file = 'LogisticRegression.joblib'
 
 try:
     model = load(model_file)
-    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-    scaler = StandardScaler()  # Change Normalizer to StandardScaler
+    encoder = load('OneHotEncoder.joblib')  # Load the pre-fitted encoder
+    scaler = load('StandardScaler.joblib')  # Load the pre-fitted scaler
 except Exception as e:
     st.error(f'Error loading files: {e}')
     st.stop()  # Stop the script if there's an issue with loading files
@@ -28,28 +28,6 @@ native_country_options = ['Cambodia', 'Canada', 'China', 'Columbia', 'Cuba', 'Do
                           'France', 'Germany', 'Greece', 'Guatemala', 'Haiti', 'Holand-Netherlands', 'Honduras', 'Hong', 'Hungary', 'India', 
                           'Iran', 'Ireland', 'Italy', 'Jamaica', 'Japan', 'Laos', 'Mexico', 'Nicaragua', 'Outlying-US(Guam-USVI-etc)', 'Peru', 
                           'Philippines', 'Poland', 'Portugal', 'Puerto-Rico', 'Scotland', 'South', 'Taiwan', 'Thailand', 'Trinadad&Tobago', 'United-States', 'Vietnam', 'Yugoslavia']
-
-# Pad shorter lists to the same length as the longest list (native_country_options)
-max_length = len(native_country_options)
-
-def pad_list(lst, target_length):
-    return (lst * (target_length // len(lst) + 1))[:target_length]
-
-categories_data = {
-    'workclass': pad_list(workclass_options, max_length),
-    'education': pad_list(education_options, max_length),
-    'marital-status': pad_list(marital_status_options, max_length),
-    'occupation': pad_list(occupation_options, max_length),
-    'relationship': pad_list(relationship_options, max_length),
-    'race': pad_list(race_options, max_length),
-    'sex': pad_list(sex_options, max_length),
-    'native-country': native_country_options
-}
-
-dummy_data = pd.DataFrame(categories_data)
-
-# Fit the OneHotEncoder on the categorical columns
-encoder.fit(dummy_data)
 
 def main():
     st.title('Salary Prediction App')
@@ -104,7 +82,7 @@ def main():
             final_input_data = final_input_data.reindex(columns=expected_columns, fill_value=0)  # Ensure all columns are present
     
             # Scale the numeric features
-            final_input_data_scaled = pd.DataFrame(scaler.fit_transform(final_input_data), columns=final_input_data.columns)
+            final_input_data_scaled = pd.DataFrame(scaler.transform(final_input_data), columns=final_input_data.columns)
     
             # Predict using the trained model
             prediction = model.predict(final_input_data_scaled)
