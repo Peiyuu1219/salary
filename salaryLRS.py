@@ -1,9 +1,10 @@
 import pandas as pd
 import streamlit as st
 from joblib import load
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-# Load the trained model, encoder, and scaler
-model_file = 'LogisticRegressionS.joblib'
+# Load the trained model and encoders
+model_file = 'LogisticRegression.joblib'
 encoder_file = 'encoder.joblib'
 scaler_file = 'scaler.joblib'
 
@@ -15,15 +16,20 @@ except Exception as e:
     st.error(f'Error loading files: {e}')
     st.stop()  # Stop the script if there's an issue with loading files
 
-# Define all possible categories (must match those used during training)
+# Define all possible categories (these must match those used during training)
 workclass_options = ['Federal-gov', 'Local-gov', 'Never-worked', 'Private', 'Self-emp-inc', 'Self-emp-not-inc', 'State-gov', 'Without-pay']
-education_options = ['1st-4th', '5th-6th', '7th-8th', '9th', '10th', '11th', '12th', 'Assoc-acdm', 'Assoc-voc', 'Bachelors', 'Doctorate', 'HS-grad', 'Masters', 'Preschool', 'Prof-school', 'Some-college']
+education_options = ['1st-4th', '5th-6th', '7th-8th', '9th', '10th', '11th', '12th', 'Assoc-acdm', 'Assoc-voc', 'Bachelors', 'Doctorate',
+                     'HS-grad', 'Masters', 'Preschool', 'Prof-school', 'Some-college']
 marital_status_options = ['Divorced', 'Married-AF-spouse', 'Married-civ-spouse', 'Married-spouse-absent', 'Never-married', 'Separated', 'Widowed']
-occupation_options = ['Adm-clerical', 'Armed-Forces', 'Craft-repair', 'Exec-managerial', 'Farming-fishing', 'Handlers-cleaners', 'Machine-op-inspct', 'Other-service', 'Priv-house-serv', 'Prof-specialty', 'Protective-serv', 'Sales', 'Tech-support', 'Transport-moving']
+occupation_options = ['Adm-clerical', 'Armed-Forces', 'Craft-repair', 'Exec-managerial', 'Farming-fishing', 'Handlers-cleaners', 'Machine-op-inspct', 
+                      'Other-service', 'Priv-house-serv', 'Prof-specialty', 'Protective-serv', 'Sales', 'Tech-support', 'Transport-moving']
 relationship_options = ['Husband', 'Not-in-family', 'Other-relative', 'Own-child', 'Unmarried', 'Wife']
 race_options = ['Amer-Indian-Eskimo', 'Asian-Pac-Islander', 'Black', 'Other', 'White']
 sex_options = ['Female', 'Male']
-native_country_options = ['Cambodia', 'Canada', 'China', 'Columbia', 'Cuba', 'Dominican-Republic', 'Ecuador', 'El-Salvador', 'England', 'France', 'Germany', 'Greece', 'Guatemala', 'Haiti', 'Holand-Netherlands', 'Honduras', 'Hong', 'Hungary', 'India', 'Iran', 'Ireland', 'Italy', 'Jamaica', 'Japan', 'Laos', 'Mexico', 'Nicaragua', 'Outlying-US(Guam-USVI-etc)', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Puerto-Rico', 'Scotland', 'South', 'Taiwan', 'Thailand', 'Trinadad&Tobago', 'United-States', 'Vietnam', 'Yugoslavia']
+native_country_options = ['Cambodia', 'Canada', 'China', 'Columbia', 'Cuba', 'Dominican-Republic', 'Ecuador', 'El-Salvador', 'England', 
+                          'France', 'Germany', 'Greece', 'Guatemala', 'Haiti', 'Holand-Netherlands', 'Honduras', 'Hong', 'Hungary', 'India', 
+                          'Iran', 'Ireland', 'Italy', 'Jamaica', 'Japan', 'Laos', 'Mexico', 'Nicaragua', 'Outlying-US(Guam-USVI-etc)', 'Peru', 
+                          'Philippines', 'Poland', 'Portugal', 'Puerto-Rico', 'Scotland', 'South', 'Taiwan', 'Thailand', 'Trinadad&Tobago', 'United-States', 'Vietnam', 'Yugoslavia']
 
 def main():
     st.title('Salary Prediction App')
@@ -60,32 +66,27 @@ def main():
                 'hours-per-week': [hours_per_week],
                 'native-country': [native_country]
             })
-
+    
             # One-hot encode the categorical features
             categorical_columns = ['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'sex', 'native-country']
             input_data_encoded = encoder.transform(input_data[categorical_columns])
-
+    
             # Create a DataFrame with encoded columns
             encoded_df = pd.DataFrame(input_data_encoded, columns=encoder.get_feature_names_out(categorical_columns))
-
-            # Combine encoded features with numeric features
-            numeric_columns = ['age', 'capital-gain', 'capital-loss', 'hours-per-week']
-            numeric_features = input_data[numeric_columns]
-            final_input_data = pd.concat([numeric_features.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
-
-            # Ensure all columns are present by reindexing to match the model’s training columns
-            expected_columns = model.feature_names_in_
-            final_input_data = final_input_data.reindex(columns=expected_columns, fill_value=0)
-
-            # Standardize the features
-            final_input_data_scaled = pd.DataFrame(scaler.transform(final_input_data), columns=final_input_data.columns)
-
-            # Predict using the trained model
-            prediction = model.predict(final_input_data_scaled)
-
-            st.success(f'The predicted salary for the provided details is: {prediction[0]}')
+    
+            # Standardize the numerical features
+            numerical_columns = ['age', 'capital-gain', 'capital-loss', 'hours-per-week']
+            input_data_scaled = scaler.transform(input_data[numerical_columns])
+    
+            # Combine the scaled numerical data with the encoded categorical data
+            final_input_data = pd.concat([pd.DataFrame(input_data_scaled, columns=numerical_columns), encoded_df], axis=1)
+    
+            # Predict the salary category
+            prediction = model.predict(final_input_data)
+            st.success(f'The predicted salary category is: {">50K" if prediction[0] == 1 else "<=50K"}')
+        
         except Exception as e:
-            st.error(f'An error occurred during prediction: {e}')
+            st.error(f'Error during prediction: {e}')
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
